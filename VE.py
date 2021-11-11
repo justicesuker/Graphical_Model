@@ -94,6 +94,42 @@ def VE(factors,eliminate_node):
     res_factors.append(new_factor)
     return res_factors
 
+def merge_factor(factor_list):
+    new_scope = []
+    for factor in factor_list:
+        temp = factor.scope
+        new_scope = new_scope + temp
+    new_scope = list(set(new_scope))
+    all_config = get_all_configuration(new_scope)
+    new_value = {}
+    for config in all_config:
+        val = 1
+        for factor in factor_list:
+            temp_config = []
+            for node in factor.scope:
+                temp_config.append(config[node])
+            val = val * factor.value[tuple(temp_config)]
+        new_value[tuple(config.values())] = val
+    return Factor(new_scope, new_value)
+
+def normalize_factor(factor):
+    z = 0
+    for config in factor.value:
+        z = z + factor.value[config]
+    for config in factor.value:
+        factor.value[config] = factor.value[config]/z
+    return factor
+
+def ep_approx(m12,m21):
+    scope = m12.scope
+    value = m12.value
+    for config in m12.value:
+        value[config] = m12.value[config]/m21.value[config]
+    res = Factor(scope,value)
+    res = normalize_factor(res)
+    return res
+
+"""
 # Input the known factors fron question 1.
 phi1 = Factor([1,2],{(0,0):13, (0,1):14, (1,0):11, (1,1):1})
 phi2 = Factor([1,3],{(0,0):15, (0,1):2,  (1,0):16, (1,1):6})
@@ -159,5 +195,4 @@ print(final_result2[1].value)
 a = final_result2[0].value[(0,)] * final_result2[1].value[(0,)] + final_result2[0].value[(1,)] * final_result2[1].value[(1,)]
 print(a)
 print((final_result2[0].value[(1,)] * final_result2[1].value[(1,)])/a)
-
-
+"""
